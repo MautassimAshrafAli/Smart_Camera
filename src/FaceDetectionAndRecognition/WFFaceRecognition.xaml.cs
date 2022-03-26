@@ -51,6 +51,8 @@ namespace FaceDetectionAndRecognition
         private Timer captureTimer;
         private Timer captureTimer_text;
         private DispatcherTimer lTimer_v;
+        #endregion
+
         #region FaceName
         private string faceName;
         string camera_color_opetions = "bgr";
@@ -65,6 +67,7 @@ namespace FaceDetectionAndRecognition
             }
         }
         #endregion
+
         #region CameraCaptureImage
         private Bitmap cameraCapture;
         public Bitmap CameraCapture
@@ -86,8 +89,6 @@ namespace FaceDetectionAndRecognition
                 imgCamera_text_vid.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => { imgCamera_text_vid.Source = BitmapToImageSource(cameraCapture_text_vid); }));
             }
         }
-        #endregion
-
         #endregion
 
         #region CameraCaptureFaceImage
@@ -401,63 +402,6 @@ namespace FaceDetectionAndRecognition
 
 
                         break;
-                    case "hsv":
-
-
-                        this.Dispatcher.Invoke((Action)(() =>
-                        {
-
-                            try
-                            {
-
-
-                                using (hsvFrame = videoCapture.QueryFrame().ToImage<Hsv, Byte>())
-                                {
-
-
-                                    if (hsvFrame != null)
-                                    {
-                                        try
-                                        {
-
-                                            if (m == false)
-                                            {
-                                                Image<Gray, byte> grayframe = hsvFrame.Convert<Gray, byte>();
-
-                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
-
-                                                //detect face
-                                                FaceName = "No face detected";
-                                                foreach (var face in faces)
-                                                {
-                                                    // grayFrame.Draw(face, new (255, 255, 0), 2);
-                                                    detectedFace = hsvFrame.Copy(face).Convert<Gray, byte>();
-                                                    FaceRecognition();
-                                                    break;
-                                                }
-
-                                            }
-                                            CameraCapture = hsvFrame.ToBitmap();
-                                            System.Threading.Thread.Sleep(1);
-
-
-                                        }
-                                        catch (Exception)
-                                        { }
-                                    }
-
-                                }
-
-                                videoCapture.Pause();
-                            }
-                            catch (Exception)
-                            { }
-
-                        }));
-
-
-
-                        break;
                     case "lab":
 
 
@@ -766,88 +710,13 @@ namespace FaceDetectionAndRecognition
             }
             else { MessageBox.Show("you are in video face detection mode");}
         }
-        private void DetectText_live( Image<Bgr, byte> img)
-        {
-
-            Image<Gray, byte> sobel = img.Convert<Gray, byte>().Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
-            Mat SE = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new System.Drawing.Size(15, 1), new System.Drawing.Point(-1, -1));
-            sobel = sobel.MorphologyEx(MorphOp.Dilate, SE, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar(255));
-            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-            Mat m = new Mat();
-
-            CvInvoke.FindContours(sobel, contours, m, RetrType.External, ChainApproxMethod.ChainApproxSimple);
-
-            List<Rectangle> list = new List<Rectangle>();
-
-            for (int i = 0; i < contours.Size; i++)
-            {
-                Rectangle brect = CvInvoke.BoundingRectangle(contours[i]);
-
-                double ar = brect.Width / brect.Height;
-                if (ar > 2 && brect.Width > 25 && brect.Height > 8 && brect.Height < 100)
-                {
-                    list.Add(brect);
-
-                }
-            }
-
-            Image<Bgr, byte> imgout = img.CopyBlank();
-            foreach (var r in list)
-            {
-                CvInvoke.Rectangle(img, r, new MCvScalar(0, 0, 255), 2);
-                CvInvoke.Rectangle(imgout, r, new MCvScalar(0, 255, 255), -1);
-            }
-            imgout._And(img);
-
-            
-            CameraCapture_t_v = img.ToBitmap();
-
-            ip2.Image = imgout.ToBitmap();
-
-        }
+      
 
         bool start_text = true;
-        private async void camtextAsync(VideoCapture vid_cap, Bitmap img_)
-        {
-
-            if (vid_cap == null)
-            {
-                return;
-            }
-
-            try
-            {
-
-                while (start_text)
-                {
-
-                    Mat frame = new Mat();
-                    vid_cap.Read(frame);
-
-                    if (!frame.IsEmpty)
-                    {
-                        img_ = frame.ToBitmap();
-                        DetectText_live(frame.ToImage<Bgr, byte>());
-                        double fps = vid_cap.GetCaptureProperty(CapProp.Fps);
-                        await Task.Delay(1000 / Convert.ToInt32(fps));
-
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            catch (Exception)
-            { }
-
-        }
+      
         bool isplay_text = true;
         private void cam_text_o_MouseUp(object sender, MouseButtonEventArgs e)
         {
-
-            camtextAsync(videoCapture2, CameraCapture_t_v);
-
             Task.Delay(5);
 
             if (isplay_text == true)
@@ -1288,7 +1157,100 @@ namespace FaceDetectionAndRecognition
         private void cam_text_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
+            if (face_vid_o_c == false)
+            {
+
+                if (cam_text_live_check == false)
+                {
+
+                    if (iscam_text == false)
+                    {
+
+                        OpenFileDialog ofd = new OpenFileDialog();
+
+                        if (ofd.ShowDialog() == true)
+                        {
+
+
+                            cam_text.icon = char.ConvertFromUtf32(0xE8BB);
+
+                            captureTimer.Stop();
+                            videoCapture.Stop();
+                            videoCapture.Dispose();
+
+                            start_text = true;
+
+                            lblFaceName.Visibility = Visibility.Hidden;
+
+                            imgCamera.Visibility = Visibility.Hidden;
+
+                            videoCapture2 = new VideoCapture(ofd.FileName);
+                            Mat m = new Mat();
+                            videoCapture2.Read(m);
+                            CameraCapture_t_v = m.ToBitmap();
+
+
+                            WindowState = System.Windows.WindowState.Maximized;
+
+                            imgCamera_text_vid.Visibility = Visibility.Visible;
+                            i2.Visibility = Visibility.Visible;
+
+
+                            if (isplay_text == true)
+                            {
+
+
+                                cam_text_o.Isactiv = Visibility.Visible;
+
+                            }
+
+                            iscam_text = true;
+
+
+                        }
+
+
+
+                    }
+                    else
+                    {
+
+
+
+                        cam_text.icon = char.ConvertFromUtf32(0xF0E3);
+                        cam_text_o.Visibility = Visibility.Hidden;
+
+                        start_text = false;
+                        imgCamera_text_vid.Source = null;
+                        videoCapture2.Stop();
+
+                        imgCamera_text_vid.Visibility = Visibility.Hidden;
+                        i2.Visibility = Visibility.Hidden;
+
+                        imgCamera.Visibility = Visibility.Visible;
+
+
+                        GetFacesList();
+
+                        vid_cap();
+
+                        captureTimer.Start();
+
+                        camera_color_opetions = "bgr";
+
+                        isplay_text = true;
+                        iscam_text = false;
+
+                    }
+
+
+                }
+                else { MessageBox.Show("you are in video text recognition"); }
+
+
+
+            }
+            else { MessageBox.Show("you are in video face detection mode"); }
         }
 
         bool camtext_ison = false;
@@ -1338,30 +1300,7 @@ namespace FaceDetectionAndRecognition
         private void hsv_o_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            if (camtext_ison == true)
-            { if_cantext_ison(); }
-
-            captureTimer.Stop();
-            videoCapture.Dispose();
-
-
-
-            GetFacesList();
-
-            camera_color_opetions = "hsv";
-
-            vid_cap();
-
-            captureTimer.Start();
-
-            Task.Delay(5);
-
-            gray_o.Isactiv = Visibility.Hidden;
-            hsv_o.Isactiv = Visibility.Hidden;
-            lab_o.Isactiv = Visibility.Hidden;
-            bgr_o.Isactiv = Visibility.Hidden;
-
-            color_o = false;
+            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
 
         }
 

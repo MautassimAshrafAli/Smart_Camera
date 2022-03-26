@@ -44,17 +44,7 @@
         <Image x:Name="imgCamera" 
                Grid.Column="1"
                Grid.Row="1"
-               VerticalAlignment="Stretch"
-               RenderTransformOrigin="0.5,0.5" >
-            <Image.LayoutTransform>
-                <TransformGroup>
-                    <ScaleTransform ScaleY="1" ScaleX="-1"/>
-                    <SkewTransform AngleY="0" AngleX="0"/>
-                    <RotateTransform Angle="0"/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Image.LayoutTransform>
-        </Image>
+               VerticalAlignment="Stretch"/>
 
         <TextBlock
             Grid.Column="0"
@@ -128,8 +118,7 @@
             Grid.Column="1"
             Grid.Row="1"
             Visibility="Hidden"
-            Foreground="{x:Null}"
-            RenderTransformOrigin="0.5,0.5">
+            Foreground="{x:Null}">
 
             <WindowsFormsHost.LayoutTransform>
                 <TransformGroup>
@@ -205,7 +194,7 @@
                 icon_size="20"
                 icon_color="#FF9C9C9C"
                 MouseUp="camera_text_live_MouseUp" />
-            
+
             <controls:camera_mode_btn_con
                 Margin="43,11.4,40.2,0"
                 Height="40"

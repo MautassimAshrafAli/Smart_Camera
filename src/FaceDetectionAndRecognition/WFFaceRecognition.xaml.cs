@@ -1287,6 +1287,7 @@ namespace FaceDetectionAndRecognition
        
         private void cam_text_MouseUp(object sender, MouseButtonEventArgs e)
         {
+
             MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
         }
 
@@ -1296,13 +1297,11 @@ namespace FaceDetectionAndRecognition
         private void camera_text_live_MouseUp(object sender, MouseButtonEventArgs e)
         {
             MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
-
         }
 
         private void camera_text_d__MouseUp(object sender, MouseButtonEventArgs e)
         {
             MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
-
         }
 
         #endregion

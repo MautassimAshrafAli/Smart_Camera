@@ -30,7 +30,6 @@ namespace FaceDetectionAndRecognition
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
             OpenFileDialog ofd = new OpenFileDialog();
 
             if (ofd.ShowDialog() == true)
@@ -38,9 +37,8 @@ namespace FaceDetectionAndRecognition
 
                 MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
 
-
             }
-
+            
         }
     }
 }

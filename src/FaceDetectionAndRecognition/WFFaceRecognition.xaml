@@ -264,15 +264,19 @@
                 icon_color="#FF9C9C9C"
                 MouseUp="cam_text_o_MouseUp"/>
 
-        
+
         </StackPanel>
 
         <WindowsFormsHost
             x:Name="i2" 
             Grid.Column="1"
-            Grid.Row="1"
             Visibility="Hidden"
-            RenderTransformOrigin="0.5,0.5">
+            RenderTransformOrigin="0.5,0.5" 
+            Margin="0,107,1.5,74"
+            HorizontalAlignment="Right"
+            Width="314"
+            Grid.Row="1" Height="228" 
+            VerticalAlignment="Center" Grid.ColumnSpan="2">
             <WindowsFormsHost.LayoutTransform>
                 <TransformGroup>
                     <ScaleTransform ScaleY="1" ScaleX="-1"/>

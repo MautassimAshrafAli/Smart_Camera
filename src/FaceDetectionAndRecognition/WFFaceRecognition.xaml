@@ -1,0 +1,296 @@
+﻿<Window x:Name="windows_" 
+        x:Class="FaceDetectionAndRecognition.WFFaceRecognition"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FaceDetectionAndRecognition"
+        xmlns:controls ="clr-namespace:FaceDetectionAndRecognition.controls"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        mc:Ignorable="d"
+        Title="Near Camera" 
+        Height="600"
+        Width="1021.277" 
+        WindowStartupLocation="CenterScreen"
+        Background="Black"
+        MinWidth="1021.277" 
+        MinHeight="600"
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+        BorderBrush="#FF939393"
+        Icon="ico.ico"
+        Loaded="Window_Loaded"
+        KeyDown="windows__KeyDown" 
+        KeyUp="windows__KeyUp">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="foregroundColor">White</SolidColorBrush>
+    </Window.Resources>
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <Image x:Name="imgCamera" 
+               Grid.Column="1"
+               Grid.Row="1"
+               VerticalAlignment="Stretch"
+               RenderTransformOrigin="0.5,0.5" >
+            <Image.LayoutTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleY="1" ScaleX="-1"/>
+                    <SkewTransform AngleY="0" AngleX="0"/>
+                    <RotateTransform Angle="0"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Image.LayoutTransform>
+        </Image>
+
+        <TextBlock
+            Grid.Column="0"
+            Grid.ColumnSpan="3"
+            x:Name="lblFaceName"    
+            TextAlignment="Center"
+            Background="{x:Null}" 
+            FontSize="15" 
+            Foreground="White"/>
+
+        <Image 
+            x:Name="imgDetectFace" 
+            Grid.Column="2"
+            Grid.Row="2"
+            Height="70" 
+            Width="90"/>
+
+        <StackPanel 
+            x:Name="spWindowControls_oc"
+            Grid.Column="1"
+            Grid.Row="2"
+            Orientation="Horizontal"
+            Height="62" 
+            Width="196">
+
+            <controls:camera_op_con
+                x:Name="face_take"
+                Isactive="Hidden"
+                icon="&#xE156;"
+                icon_color="#FF9C9C9C"
+                icon_size="25"
+                Isactive_icon="&#xEA3A;"
+                Isactiv_color="White"
+                Isactiv_size="44"
+                MouseUp="DetectFace_MouseUp"/>
+
+            <controls:camera_op_con
+                x:Name="camera_take"
+                Isactive="Visible"
+                icon="&#xE8A2;"
+                icon_color="White"
+                icon_size="25"
+                Isactive_icon="&#xEA3A;"
+                Isactiv_color="White"
+                Isactiv_size="44"
+                MouseUp="pic_MouseUp"/>
+
+            <controls:camera_op_con
+                x:Name="video_take"
+                Isactive="Hidden"
+                icon="&#xE116;"
+                icon_color="#FF9C9C9C"
+                icon_size="25"
+                Isactive_icon="&#xEA3A;"
+                Isactiv_color="Red"
+                Isactiv_size="44"
+                MouseUp="video_MouseUp"/>
+
+        </StackPanel>
+
+        <Image 
+            x:Name="img"  
+            Grid.Column="0"
+            Grid.Row="2"
+            Height="70" 
+            Width="90">
+        </Image>
+
+        <WindowsFormsHost
+            x:Name="pic_h"
+            Grid.Column="1"
+            Grid.Row="1"
+            Visibility="Hidden"
+            Foreground="{x:Null}"
+            RenderTransformOrigin="0.5,0.5">
+
+            <WindowsFormsHost.LayoutTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleY="1" ScaleX="-1"/>
+                    <SkewTransform AngleY="0" AngleX="0"/>
+                    <RotateTransform Angle="0"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </WindowsFormsHost.LayoutTransform>
+            <wf:PictureBox
+                x:Name="PictureBoxvideo"
+                 SizeMode="Zoom" 
+                 Dock="Fill">
+
+            </wf:PictureBox>
+
+        </WindowsFormsHost>
+
+        <controls:video_stop_con
+            Grid.Column="2"
+            Grid.Row="1"
+            Grid.RowSpan="1"
+            x:Name="vpo"
+            Visibility="Hidden"
+            icon="&#xE15B;"
+            icon_color="#FF9C9C9C"
+            icon_size="25"
+            margin_icon="59,192,0,0"
+            time="0:0:0"
+            margin_time="59,10,0,0"
+            time_color="White"
+            MouseUp="vstop_MouseUp"/>
+
+        <StackPanel 
+            Grid.Column="0"
+            Grid.Row="1"
+            Grid.RowSpan="1"
+            x:Name="cam_o_"
+            Width="123">
+
+            <controls:camera_mode_btn_con
+                x:Name="face_vid_o"
+                Margin="43,80,40.2,0"
+                Height="40"
+                icon="&#xF7EE;"
+                icon_size="20"
+                icon_color="#FF9C9C9C"
+                MouseUp="open_vid_face_MouseUp"/>
+
+            <controls:camera_mode_btn_con
+                x:Name="cam_color"
+                Margin="43,11.4,40.2,0"
+                Height="40"
+                icon="&#xF69E;"
+                icon_size="20"
+                icon_color="#FF9C9C9C"
+                MouseUp="camera_color_MouseUp"/>
+
+            <controls:camera_mode_btn_con
+                x:Name="cam_text"
+                Margin="43,11.4,40.2,0"
+                Height="40"
+                icon="&#xF0E3;"
+                icon_size="20"
+                icon_color="#FF9C9C9C"
+                MouseUp="cam_text_MouseUp"/>
+
+            <controls:camera_mode_btn_con
+                x:Name="cam_text_live"
+                Margin="43,11.4,40.2,0"
+                Height="40"
+                icon="&#xEDFB;"
+                icon_size="20"
+                icon_color="#FF9C9C9C"
+                MouseUp="camera_text_live_MouseUp" />
+
+            <controls:camera_mode_btn_con
+                Margin="43,11.4,40.2,0"
+                Height="40"
+                icon="&#xE8AC;"
+                icon_size="20"
+                icon_color="#FF9C9C9C"
+                MouseUp="camera_text_d__MouseUp"/>
+
+            <controls:color_mode_btn_con
+                x:Name="gray_o"
+                Isactiv="Hidden"
+                Height="30" 
+                Margin="0,-340,87.2,0" 
+                icon="&#xED3A;"
+                icon_size="15"
+                icon_color="#FF9C9C9C"
+                MouseUp="gray_o_MouseUp"/>
+
+            <controls:color_mode_btn_con
+                x:Name="hsv_o"
+                Isactiv="Hidden"
+                Height="30"
+                Margin="90,-340,0,0"
+                icon="&#xE9CA;"
+                icon_size="15"
+                icon_color="#FF9C9C9C"
+                MouseUp="hsv_o_MouseUp"/>
+
+            <controls:color_mode_btn_con
+                x:Name="lab_o"
+                Isactiv="Hidden"
+                Height="30" 
+                Margin="0,-410,87.2,0"
+                icon="&#xE9A1;"
+                icon_size="15"
+                icon_color="#FF9C9C9C"
+                MouseUp="lab_o_MouseUp"/>
+
+            <controls:color_mode_btn_con
+                x:Name="bgr_o"
+                Isactiv="Hidden"
+                Height="30"
+                Margin="91,-410,0,0"
+                icon="&#xE706;"
+                icon_size="15"
+                icon_color="#FF9C9C9C"
+                MouseUp="bgr_o_MouseUp"/>
+
+            <controls:color_mode_btn_con
+                x:Name="cam_text_o"
+                Isactiv="Hidden"
+                Height="30"
+                Margin="5,-240,88.2,0"
+                icon="&#xE102;"
+                icon_size="15"
+                icon_color="#FF9C9C9C"
+                MouseUp="cam_text_o_MouseUp"/>
+
+        
+        </StackPanel>
+
+        <WindowsFormsHost
+            x:Name="i2" 
+            Grid.Column="1"
+            Grid.Row="1"
+            Visibility="Hidden"
+            RenderTransformOrigin="0.5,0.5">
+            <WindowsFormsHost.LayoutTransform>
+                <TransformGroup>
+                    <ScaleTransform ScaleY="1" ScaleX="-1"/>
+                    <SkewTransform AngleY="0" AngleX="0"/>
+                    <RotateTransform Angle="0"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </WindowsFormsHost.LayoutTransform>
+            <wf:PictureBox x:Name="ip2" SizeMode="StretchImage"  Dock="Fill"/>
+        </WindowsFormsHost>
+
+        <Image 
+            x:Name="imgCamera_text_vid" 
+            Grid.Column="1"
+            Grid.Row="1"
+            VerticalAlignment="Stretch"
+            Visibility="Hidden"/>
+
+
+    </Grid>
+</Window>

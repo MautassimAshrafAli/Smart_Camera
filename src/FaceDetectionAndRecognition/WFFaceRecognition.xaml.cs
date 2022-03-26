@@ -1287,101 +1287,7 @@ namespace FaceDetectionAndRecognition
        
         private void cam_text_MouseUp(object sender, MouseButtonEventArgs e)
         {
-
-            if (face_vid_o_c == false)
-            {
-
-                if (cam_text_live_check == false)
-                {
-
-                    if (iscam_text == false)
-                    {
-
-                        OpenFileDialog ofd = new OpenFileDialog();
-
-                        if (ofd.ShowDialog() == true)
-                        {
-
-
-                            cam_text.icon = char.ConvertFromUtf32(0xE8BB);
-
-                            captureTimer.Stop();
-                            videoCapture.Stop();
-                            videoCapture.Dispose();
-
-                            start_text = true;
-
-                            lblFaceName.Visibility = Visibility.Hidden;
-
-                            imgCamera.Visibility = Visibility.Hidden;
-
-                            videoCapture2 = new VideoCapture(ofd.FileName);
-                            Mat m = new Mat();
-                            videoCapture2.Read(m);
-                            CameraCapture_t_v = m.ToBitmap();
-
-
-                            WindowState = System.Windows.WindowState.Maximized;
-
-                            imgCamera_text_vid.Visibility = Visibility.Visible;
-                            i2.Visibility = Visibility.Visible;
-
-
-                            if (isplay_text == true)
-                            {
-
-
-                                cam_text_o.Isactiv = Visibility.Visible;
-
-                            }
-
-                            iscam_text = true;
-
-
-                        }
-
-
-
-                    }
-                    else
-                    {
-
-
-
-                        cam_text.icon = char.ConvertFromUtf32(0xF0E3);
-                        cam_text_o.Visibility = Visibility.Hidden;
-
-                        start_text = false;
-                        imgCamera_text_vid.Source = null;
-                        videoCapture2.Stop();
-
-                        imgCamera_text_vid.Visibility = Visibility.Hidden;
-                        i2.Visibility = Visibility.Hidden;
-
-                        imgCamera.Visibility = Visibility.Visible;
-
-
-                        GetFacesList();
-
-                        vid_cap();
-
-                        captureTimer.Start();
-
-                        camera_color_opetions = "bgr";
-
-                        isplay_text = true;
-                        iscam_text = false;
-
-                    }
-
-
-                }
-                else { MessageBox.Show("you are in video text recognition"); }
-
-
-
-            }
-            else { MessageBox.Show("you are in video face detection mode"); }
+            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
         }
 
         bool camtext_ison = false;
@@ -1389,67 +1295,14 @@ namespace FaceDetectionAndRecognition
         bool cam_text_live_check = false;
         private void camera_text_live_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (face_vid_o_c == false)
-            {
+            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
 
-                if (iscam_text == false)
-                {
-
-                    camtext_ison = true;
-
-                    WindowState = System.Windows.WindowState.Maximized;
-
-                    cameratext_live_c += 1;
-
-                    if (cameratext_live_c == 1)
-                    {
-
-
-                        cam_text.icon = char.ConvertFromUtf32(0xF0E3);
-                        cam_text_o.Visibility = Visibility.Hidden;
-
-
-                        captureTimer.Stop();
-                        videoCapture.Stop();
-                        videoCapture.Dispose();
-
-                        cam_text_live.icon = char.ConvertFromUtf32(0xE8BB);
-
-
-                        imgCamera.Visibility = Visibility.Hidden;
-
-                        start_text = true;
-
-                        i2.Visibility = Visibility.Visible;
-                        imgCamera_text_vid.Visibility = Visibility.Visible;
-
-                        videoCapture_text = new VideoCapture(Config.ActiveCameraIndex);
-
-                        captureTimer_text.Start();
-
-                        camtextAsync(videoCapture_text, CameraCapture_t_v);
-
-                        cam_text_live_check = true;
-
-                    }
-
-                }
-
-                else { MessageBox.Show("you are in video text  recognition"); }
-
-            }
-            else
-            { MessageBox.Show("you are in video face detection mode"); }
-
-            Task.Delay(5);
-
-            if (cameratext_live_c == 2) { if_cantext_ison(); }
         }
 
         private void camera_text_d__MouseUp(object sender, MouseButtonEventArgs e)
         {
-            text_d d = new text_d();
-            d.Show();
+            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
+
         }
 
         #endregion

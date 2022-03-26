@@ -30,21 +30,17 @@ namespace FaceDetectionAndRecognition
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
             OpenFileDialog ofd = new OpenFileDialog();
 
             if (ofd.ShowDialog() == true)
             {
 
-                Bitmap img = new Bitmap(ofd.FileName);
-                TesseractEngine engine = new TesseractEngine("./tessd", "eng", EngineMode.Default);
-                Page page = engine.Process(img, PageSegMode.Auto);
-                string result = page.GetText();
-                t_d.Text= result;
+                MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
 
-                t_d_.ImageLocation = ofd.FileName;
 
             }
-            
+
         }
     }
 }

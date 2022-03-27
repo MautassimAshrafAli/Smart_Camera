@@ -25,23 +25,26 @@ using Tesseract;
 namespace FaceDetectionAndRecognition
 {
 
-    public partial class WFFaceRecognition : Window, INotifyPropertyChanged
+    public partial class WFFaceRecognition : Window
     {
         #region Properties
+
         string s = System.Environment.GetEnvironmentVariable("USERPROFILE");
+
         public Capture cap_d;
         public Filters filters_;
-        public event PropertyChangedEventHandler PropertyChanged;
         private VideoCapture videoCapture;
         private VideoCapture videoCapture2;
         private VideoCapture videoCapture_text;
         private CascadeClassifier haarCascade;
+
         private Image<Bgr, Byte> bgrFrame = null;
         private Image<Gray, Byte> grayFrame = null;
         private Image<Hsv, Byte> hsvFrame = null;
         private Image<Lab, Byte> labFrame = null;
         private Image<Gray, Byte> detectedFace = null;
         private Image<Bgr, Byte> bgrFrame_text = null;
+
         private List<FaceData> faceList = new List<FaceData>();
         private VectorOfMat imageList = new VectorOfMat();
         private List<string> nameList = new List<string>();
@@ -51,21 +54,10 @@ namespace FaceDetectionAndRecognition
         private Timer captureTimer;
         private Timer captureTimer_text;
         private DispatcherTimer lTimer_v;
-        #endregion
 
-        #region FaceName
-        private string faceName;
-        string camera_color_opetions = "bgr";
+        bool face_vid = false;
+        int t = 0;
 
-        public string FaceName
-        {
-            get { return faceName; }
-            set
-            {
-                faceName = value.ToUpper();
-                lblFaceName.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => { lblFaceName.Text = faceName; }));
-            }
-        }
         #endregion
 
         #region CameraCaptureImage
@@ -110,7 +102,7 @@ namespace FaceDetectionAndRecognition
 
             captureTimer = new Timer()
             {
-                Interval = Config.TimerResponseValue - 300
+                Interval = 70
             };
             captureTimer.Elapsed += CaptureTimer_Elapsed;
 
@@ -128,98 +120,295 @@ namespace FaceDetectionAndRecognition
 
         }
 
-        #region video record time
-        int time_v_s = 0;
-        int time_v_m = 0;
-        int time_v_h = 0;
-        string time_v;
-        private void OnUpdateTimerTick(object sender, EventArgs e)
-        {
-            time_v_s += 1;
-
-            vpo.time = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
-
-
-            if (time_v_s > 59)
-            {
-
-                time_v_s = 0;
-                time_v_m += 1;
-                time_v_h = 0;
-
-                time_v = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
-                vpo.time = time_v;
-
-            }
-            if (time_v_m > 59)
-            {
-
-                time_v_s = 0;
-                time_v_m = 0;
-                time_v_h += 1;
-
-                time_v = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
-                vpo.time = time_v;
-
-
-            }
-
-            if (time_v_h > 12)
-            {
-
-
-                time_v_s = 0;
-                time_v_m = 0;
-                time_v_h = 1;
-
-                time_v = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
-                vpo.time = time_v;
-
-
-            }
-
-        }
-
-        #endregion
-
         private void vid_cap()
         {
-            Task.Factory.StartNew(() =>
-            {
-                videoCapture = new VideoCapture(0);
-                videoCapture.SetCaptureProperty(CapProp.Fps, 20);
-                videoCapture.SetCaptureProperty(CapProp.FrameHeight, 450);
-                videoCapture.SetCaptureProperty(CapProp.FrameWidth, 360);
-
-            });
+            videoCapture = new VideoCapture(0);
+            videoCapture.SetCaptureProperty(CapProp.Fps, 1000);
+            videoCapture.SetCaptureProperty(CapProp.FrameHeight, 450);
+            videoCapture.SetCaptureProperty(CapProp.FrameWidth, 360);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            captureTimer.Interval = 70;
             GetFacesList();
             vid_cap();
             captureTimer.Start();
-
         }
 
         private void CaptureTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            Task.Factory.StartNew(() =>
-            {
-                ProcessFrame();
-            });
+            Task.Factory.StartNew(() =>ProcessFrame());
         }
+
         private void CaptureTimer_text_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Task.Factory.StartNew(() =>ProcessFrame_text());
+        }
+
+        #region Process frame
+
+        bool m = false;
+        private void ProcessFrame()
+        {
+                switch (camera_color_opetions)
+                {
+                    case "bgr":
+
+                            try
+                            {
+                                using (bgrFrame = videoCapture.QueryFrame().ToImage<Bgr, Byte>())
+                                {
+                                    if (bgrFrame != null)
+                                    {
+                                        try
+                                        {//for emgu cv bug
+
+                                            if (m == false)
+                                            {
+                                                Image<Gray, byte> grayframe = bgrFrame.Convert<Gray, byte>();
+
+                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
+
+                                                //detect face
+                                                FaceName = "No face detected";
+                                                foreach (var face in faces)
+                                                {
+                                                    bgrFrame.Draw(face, new Bgr(255, 255, 0), 2);
+                                                    detectedFace = bgrFrame.Copy(face).Convert<Gray, byte>();
+                                                    FaceRecognition();
+                                                    break;
+                                                }
+
+                                            }
+                                            //CameraCapture = frame;
+                                            CameraCapture = bgrFrame.ToBitmap();
+
+                                            System.Threading.Thread.Sleep(1);
+
+
+
+                                        }
+                                        catch (Exception)
+                                        { }
+                                    }
+                                }
+                                videoCapture.Pause();
+                            }
+                            catch (Exception)
+                            { }
+
+                        break;
+                    case "gray":
+
+                            try
+                            {
+
+
+
+                                using (grayFrame = videoCapture.QueryFrame().ToImage<Gray, Byte>())
+                                {
+
+                                    if (grayFrame != null)
+                                    {
+                                        try
+                                        {
+
+                                            if (m == false)
+                                            {
+                                                Image<Gray, byte> grayframe = grayFrame.Convert<Gray, byte>();
+
+                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
+
+                                                //detect face
+                                                FaceName = "No face detected";
+                                                foreach (var face in faces)
+                                                {
+                                                    // grayFrame.Draw(face, new (255, 255, 0), 2);
+                                                    detectedFace = grayFrame.Copy(face).Convert<Gray, byte>();
+                                                    FaceRecognition();
+                                                    break;
+                                                }
+
+                                            }
+                                            CameraCapture = grayFrame.ToBitmap();
+                                            System.Threading.Thread.Sleep(1);
+
+
+                                        }
+                                        catch (Exception)
+                                        { }
+                                    }
+
+
+                                }
+
+                                videoCapture.Pause();
+                            }
+                            catch (Exception)
+                            { }
+
+                        break;
+                    case "hsv":
+
+                            try
+                            {
+
+
+                                using (hsvFrame = videoCapture.QueryFrame().ToImage<Hsv, Byte>())
+                                {
+
+
+                                    if (hsvFrame != null)
+                                    {
+                                        try
+                                        {
+
+                                            if (m == false)
+                                            {
+                                                Image<Gray, byte> grayframe = hsvFrame.Convert<Gray, byte>();
+
+                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
+
+                                                //detect face
+                                                FaceName = "No face detected";
+                                                foreach (var face in faces)
+                                                {
+                                                    // grayFrame.Draw(face, new (255, 255, 0), 2);
+                                                    detectedFace = hsvFrame.Copy(face).Convert<Gray, byte>();
+                                                    FaceRecognition();
+                                                    break;
+                                                }
+
+                                            }
+                                            CameraCapture = hsvFrame.ToBitmap();
+                                            System.Threading.Thread.Sleep(1);
+
+
+                                        }
+                                        catch (Exception)
+                                        { }
+                                    }
+
+                                }
+
+                                videoCapture.Pause();
+                            }
+                            catch (Exception)
+                            { }
+
+                        break;
+                    case "lab":
+
+                            try
+                            {
+
+
+
+                                using (labFrame = videoCapture.QueryFrame().ToImage<Lab, Byte>())
+                                {
+                                    if (labFrame != null)
+                                    {
+                                        try
+                                        {
+
+                                            if (m == false)
+                                            {
+                                                Image<Gray, byte> grayframe = labFrame.Convert<Gray, byte>();
+
+                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
+
+                                                //detect face
+                                                FaceName = "No face detected";
+                                                foreach (var face in faces)
+                                                {
+                                                    // grayFrame.Draw(face, new (255, 255, 0), 2);
+                                                    detectedFace = labFrame.Copy(face).Convert<Gray, byte>();
+                                                    FaceRecognition();
+                                                    break;
+                                                }
+
+                                            }
+                                            CameraCapture = labFrame.ToBitmap();
+                                            System.Threading.Thread.Sleep(1);
+
+
+                                        }
+                                        catch (Exception)
+                                        { }
+                                    }
+
+                                }
+
+                                videoCapture.Pause();
+                            }
+                            catch (Exception)
+                            { }
+
+                        break;
+
+                    default:
+
+                            try
+                            {
+                                using (bgrFrame = videoCapture.QueryFrame().ToImage<Bgr, Byte>())
+                                {
+                                    if (bgrFrame != null)
+                                    {
+                                        try
+                                        {//for emgu cv bug
+
+                                            if (m == false)
+                                            {
+                                                Image<Gray, byte> grayframe = bgrFrame.Convert<Gray, byte>();
+
+                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
+
+                                                //detect face
+                                                FaceName = "No face detected";
+                                                foreach (var face in faces)
+                                                {
+                                                    bgrFrame.Draw(face, new Bgr(255, 255, 0), 2);
+                                                    detectedFace = bgrFrame.Copy(face).Convert<Gray, byte>();
+                                                    FaceRecognition();
+                                                    break;
+                                                }
+
+                                            }
+                                            //CameraCapture = frame;
+                                            CameraCapture = bgrFrame.ToBitmap();
+
+                                            System.Threading.Thread.Sleep(1);
+
+
+
+                                        }
+                                        catch (Exception)
+                                        { }
+                                    }
+                                }
+                                videoCapture.Pause();
+                            }
+                            catch (Exception)
+                            { }
+
+                        break;
+                }
+        }
+
+        private void ProcessFrame_text()
         {
             Task.Factory.StartNew(() =>
             {
-                ProcessFrame_text();
+
+                bgrFrame_text = videoCapture_text.QueryFrame().ToImage<Bgr, Byte>();
+                Image<Gray, byte> grayframe = bgrFrame_text.Convert<Gray, byte>();
+                CameraCapture_t_v = bgrFrame_text.ToBitmap();
+
             });
+
         }
-      
-        bool face_vid = false;
-        int t = 0;
+
+        #endregion
 
         #region Process face
         public void GetFacesList()
@@ -287,240 +476,6 @@ namespace FaceDetectionAndRecognition
             }
 
         }
-        bool m = false;
-        private void ProcessFrame()
-        {
-
-            Task.Factory.StartNew(() =>
-            {
-
-                switch (camera_color_opetions)
-                {
-                    case "bgr":
-
-                        this.Dispatcher.Invoke((Action)(() =>
-                        {
-                            try
-                            {
-                                using (bgrFrame = videoCapture.QueryFrame().ToImage<Bgr, Byte>())
-                                {
-                                    if (bgrFrame != null)
-                                    {
-                                        try
-                                        {//for emgu cv bug
-
-                                            if (m == false)
-                                            {
-                                                Image<Gray, byte> grayframe = bgrFrame.Convert<Gray, byte>();
-
-                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
-
-                                                //detect face
-                                                FaceName = "No face detected";
-                                                foreach (var face in faces)
-                                                {
-                                                    bgrFrame.Draw(face, new Bgr(255, 255, 0), 2);
-                                                    detectedFace = bgrFrame.Copy(face).Convert<Gray, byte>();
-                                                    FaceRecognition();
-                                                    break;
-                                                }
-
-                                            }
-                                            //CameraCapture = frame;
-                                            CameraCapture = bgrFrame.ToBitmap();
-
-                                            System.Threading.Thread.Sleep(1);
-
-
-
-                                        }
-                                        catch (Exception)
-                                        { }
-                                    }
-                                }
-                                videoCapture.Pause();
-                            }
-                            catch (Exception)
-                            { }
-                        }));
-
-                        break;
-                    case "gray":
-
-
-                        this.Dispatcher.Invoke((Action)(() =>
-                        {
-
-                            try
-                            {
-
-
-
-                                using (grayFrame = videoCapture.QueryFrame().ToImage<Gray, Byte>())
-                                {
-
-                                    if (grayFrame != null)
-                                    {
-                                        try
-                                        {
-
-                                            if (m == false)
-                                            {
-                                                Image<Gray, byte> grayframe = grayFrame.Convert<Gray, byte>();
-
-                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
-
-                                            //detect face
-                                            FaceName = "No face detected";
-                                                foreach (var face in faces)
-                                                {
-                                                // grayFrame.Draw(face, new (255, 255, 0), 2);
-                                                detectedFace = grayFrame.Copy(face).Convert<Gray, byte>();
-                                                    FaceRecognition();
-                                                    break;
-                                                }
-
-                                            }
-                                            CameraCapture = grayFrame.ToBitmap();
-                                            System.Threading.Thread.Sleep(1);
-
-
-                                        }
-                                        catch (Exception)
-                                        { }
-                                    }
-
-
-                                }
-
-                                videoCapture.Pause();
-                            }
-                            catch (Exception)
-                            { }
-                        }));
-
-
-
-                        break;
-                    case "lab":
-
-
-                        this.Dispatcher.Invoke((Action)(() =>
-                        {
-
-                            try
-                            {
-
-
-
-                                using (labFrame = videoCapture.QueryFrame().ToImage<Lab, Byte>())
-                                {
-                                    if (labFrame != null)
-                                    {
-                                        try
-                                        {
-
-                                            if (m == false)
-                                            {
-                                                Image<Gray, byte> grayframe = labFrame.Convert<Gray, byte>();
-
-                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
-
-                                                //detect face
-                                                FaceName = "No face detected";
-                                                foreach (var face in faces)
-                                                {
-                                                    // grayFrame.Draw(face, new (255, 255, 0), 2);
-                                                    detectedFace = labFrame.Copy(face).Convert<Gray, byte>();
-                                                    FaceRecognition();
-                                                    break;
-                                                }
-
-                                            }
-                                            CameraCapture = labFrame.ToBitmap();
-                                            System.Threading.Thread.Sleep(1);
-
-
-                                        }
-                                        catch (Exception)
-                                        { }
-                                    }
-
-                                }
-
-                                videoCapture.Pause();
-                            }
-                            catch (Exception)
-                            { }
-                        }));
-
-                        break;
-
-                    default:
-
-                        this.Dispatcher.Invoke((Action)(() =>
-                        {
-                            try
-                            {
-                                using (bgrFrame = videoCapture.QueryFrame().ToImage<Bgr, Byte>())
-                                {
-                                    if (bgrFrame != null)
-                                    {
-                                        try
-                                        {//for emgu cv bug
-
-                                            if (m == false)
-                                            {
-                                                Image<Gray, byte> grayframe = bgrFrame.Convert<Gray, byte>();
-
-                                                Rectangle[] faces = haarCascade.DetectMultiScale(grayframe, 1.2, 10, new System.Drawing.Size(50, 50), new System.Drawing.Size(200, 200));
-
-                                                //detect face
-                                                FaceName = "No face detected";
-                                                foreach (var face in faces)
-                                                {
-                                                    bgrFrame.Draw(face, new Bgr(255, 255, 0), 2);
-                                                    detectedFace = bgrFrame.Copy(face).Convert<Gray, byte>();
-                                                    FaceRecognition();
-                                                    break;
-                                                }
-
-                                            }
-                                            //CameraCapture = frame;
-                                            CameraCapture = bgrFrame.ToBitmap();
-
-                                            System.Threading.Thread.Sleep(1);
-
-
-
-                                        }
-                                        catch (Exception)
-                                        { }
-                                    }
-                                }
-                                videoCapture.Pause();
-                            }
-                            catch (Exception)
-                            { }
-                        }));
-                        break;
-                }
-
-            });
-        }
-
-        private void ProcessFrame_text()
-        {
-            Task.Factory.StartNew(() =>
-            {
-
-                bgrFrame_text = videoCapture_text.QueryFrame().ToImage<Bgr, Byte>();
-                Image<Gray, byte> grayframe = bgrFrame_text.Convert<Gray, byte>();
-                CameraCapture_t_v = bgrFrame_text.ToBitmap();
-
-            });
-
-        }
 
         private void FaceRecognition()
         {
@@ -571,6 +526,21 @@ namespace FaceDetectionAndRecognition
 
         #endregion
 
+        #region FaceName
+        private string faceName;
+        string camera_color_opetions = "bgr";
+
+        public string FaceName
+        {
+            get { return faceName; }
+            set
+            {
+                faceName = value.ToUpper();
+                lblFaceName.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() => { lblFaceName.Text = faceName; }));
+            }
+        }
+        #endregion
+
         #region stop video
         private void vstop_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -602,10 +572,64 @@ namespace FaceDetectionAndRecognition
             video_start = false;
 
             GetFacesList();
-
             vid_cap();
 
             captureTimer.Start();
+        }
+
+        #endregion
+        
+        #region video record time
+
+        int time_v_s = 0;
+        int time_v_m = 0;
+        int time_v_h = 0;
+        string time_v;
+        private void OnUpdateTimerTick(object sender, EventArgs e)
+        {
+            time_v_s += 1;
+
+            vpo.time = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
+
+
+            if (time_v_s > 59)
+            {
+
+                time_v_s = 0;
+                time_v_m += 1;
+                time_v_h = 0;
+
+                time_v = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
+                vpo.time = time_v;
+
+            }
+            if (time_v_m > 59)
+            {
+
+                time_v_s = 0;
+                time_v_m = 0;
+                time_v_h += 1;
+
+                time_v = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
+                vpo.time = time_v;
+
+
+            }
+
+            if (time_v_h > 12)
+            {
+
+
+                time_v_s = 0;
+                time_v_m = 0;
+                time_v_h = 1;
+
+                time_v = time_v_h.ToString() + ":" + time_v_m.ToString() + ":" + time_v_s.ToString();
+                vpo.time = time_v;
+
+
+            }
+
         }
 
         #endregion
@@ -689,7 +713,6 @@ namespace FaceDetectionAndRecognition
 
 
                         GetFacesList();
-
                         vid_cap();
 
                         captureTimer.Start();
@@ -710,13 +733,88 @@ namespace FaceDetectionAndRecognition
             }
             else { MessageBox.Show("you are in video face detection mode");}
         }
-      
+        private void DetectText_live( Image<Bgr, byte> img)
+        {
+
+            Image<Gray, byte> sobel = img.Convert<Gray, byte>().Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
+            Mat SE = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new System.Drawing.Size(15, 1), new System.Drawing.Point(-1, -1));
+            sobel = sobel.MorphologyEx(MorphOp.Dilate, SE, new System.Drawing.Point(-1, -1), 1, BorderType.Reflect, new MCvScalar(255));
+            VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+            Mat m = new Mat();
+
+            CvInvoke.FindContours(sobel, contours, m, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+
+            List<Rectangle> list = new List<Rectangle>();
+
+            for (int i = 0; i < contours.Size; i++)
+            {
+                Rectangle brect = CvInvoke.BoundingRectangle(contours[i]);
+
+                double ar = brect.Width / brect.Height;
+                if (ar > 2 && brect.Width > 25 && brect.Height > 8 && brect.Height < 100)
+                {
+                    list.Add(brect);
+
+                }
+            }
+
+            Image<Bgr, byte> imgout = img.CopyBlank();
+            foreach (var r in list)
+            {
+                CvInvoke.Rectangle(img, r, new MCvScalar(0, 0, 255), 2);
+                CvInvoke.Rectangle(imgout, r, new MCvScalar(0, 255, 255), -1);
+            }
+            imgout._And(img);
+
+            
+            CameraCapture_t_v = img.ToBitmap();
+
+            ip2.Image = imgout.ToBitmap();
+
+        }
 
         bool start_text = true;
-      
+        private async void camtextAsync(VideoCapture vid_cap, Bitmap img_)
+        {
+
+            if (vid_cap == null)
+            {
+                return;
+            }
+
+            try
+            {
+
+                while (start_text)
+                {
+
+                    Mat frame = new Mat();
+                    vid_cap.Read(frame);
+
+                    if (!frame.IsEmpty)
+                    {
+                        img_ = frame.ToBitmap();
+                        DetectText_live(frame.ToImage<Bgr, byte>());
+                        double fps = vid_cap.GetCaptureProperty(CapProp.Fps);
+                        await Task.Delay(1000 / Convert.ToInt32(fps));
+
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            catch (Exception)
+            { }
+
+        }
         bool isplay_text = true;
         private void cam_text_o_MouseUp(object sender, MouseButtonEventArgs e)
         {
+
+            camtextAsync(videoCapture2, CameraCapture_t_v);
+
             Task.Delay(5);
 
             if (isplay_text == true)
@@ -742,7 +840,6 @@ namespace FaceDetectionAndRecognition
             imgCamera_text_vid.Visibility = Visibility.Hidden;
             imgCamera.Visibility = Visibility.Visible;
             cam_text_live_check = false;
-
 
             vid_cap();
 
@@ -913,7 +1010,6 @@ namespace FaceDetectionAndRecognition
                     videoCapture.Dispose();
 
                     GetFacesList();
-
                     vid_cap();
 
                     captureTimer.Start();
@@ -1092,7 +1188,6 @@ namespace FaceDetectionAndRecognition
                 videoCapture.Dispose();
 
                 GetFacesList();
-
                 vid_cap();
 
                 captureTimer.Start();
@@ -1231,7 +1326,6 @@ namespace FaceDetectionAndRecognition
 
 
                         GetFacesList();
-
                         vid_cap();
 
                         captureTimer.Start();
@@ -1258,12 +1352,67 @@ namespace FaceDetectionAndRecognition
         bool cam_text_live_check = false;
         private void camera_text_live_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
+            if (face_vid_o_c == false)
+            {
+
+                if (iscam_text == false)
+                {
+
+                    camtext_ison = true;
+
+                    WindowState = System.Windows.WindowState.Maximized;
+
+                    cameratext_live_c += 1;
+
+                    if (cameratext_live_c == 1)
+                    {
+
+
+                        cam_text.icon = char.ConvertFromUtf32(0xF0E3);
+                        cam_text_o.Visibility = Visibility.Hidden;
+
+
+                        captureTimer.Stop();
+                        videoCapture.Stop();
+                        videoCapture.Dispose();
+
+                        cam_text_live.icon = char.ConvertFromUtf32(0xE8BB);
+
+
+                        imgCamera.Visibility = Visibility.Hidden;
+
+                        start_text = true;
+
+                        i2.Visibility = Visibility.Visible;
+                        imgCamera_text_vid.Visibility = Visibility.Visible;
+
+                        videoCapture_text = new VideoCapture(Config.ActiveCameraIndex);
+
+                        captureTimer_text.Start();
+
+                        camtextAsync(videoCapture_text, CameraCapture_t_v);
+
+                        cam_text_live_check = true;
+
+                    }
+
+                }
+
+                else { MessageBox.Show("you are in video text  recognition"); }
+
+            }
+            else
+            { MessageBox.Show("you are in video face detection mode"); }
+
+            Task.Delay(5);
+
+            if (cameratext_live_c == 2) { if_cantext_ison(); }
         }
 
         private void camera_text_d__MouseUp(object sender, MouseButtonEventArgs e)
         {
-            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
+            text_d d = new text_d();
+            d.Show();
         }
 
         #endregion
@@ -1281,7 +1430,6 @@ namespace FaceDetectionAndRecognition
             GetFacesList();
 
             camera_color_opetions = "gray";
-
             vid_cap();
 
             captureTimer.Start();
@@ -1300,7 +1448,29 @@ namespace FaceDetectionAndRecognition
         private void hsv_o_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
+            if (camtext_ison == true)
+            { if_cantext_ison(); }
+
+            captureTimer.Stop();
+            videoCapture.Dispose();
+
+
+
+            GetFacesList();
+
+            camera_color_opetions = "hsv";
+            vid_cap();
+
+            captureTimer.Start();
+
+            Task.Delay(5);
+
+            gray_o.Isactiv = Visibility.Hidden;
+            hsv_o.Isactiv = Visibility.Hidden;
+            lab_o.Isactiv = Visibility.Hidden;
+            bgr_o.Isactiv = Visibility.Hidden;
+
+            color_o = false;
 
         }
 
@@ -1317,7 +1487,6 @@ namespace FaceDetectionAndRecognition
             GetFacesList();
 
             camera_color_opetions = "lab";
-
             vid_cap();
 
             captureTimer.Start();
@@ -1343,7 +1512,6 @@ namespace FaceDetectionAndRecognition
             GetFacesList();
 
             camera_color_opetions = "bgr";
-
             vid_cap();
 
             captureTimer.Start();

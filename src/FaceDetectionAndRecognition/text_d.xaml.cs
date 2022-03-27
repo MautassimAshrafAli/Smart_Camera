@@ -35,7 +35,13 @@ namespace FaceDetectionAndRecognition
             if (ofd.ShowDialog() == true)
             {
 
-                MessageBox.Show("15$ for full code --> Contact me on whatsApp to complete the payment process +201124932549");
+                Bitmap img = new Bitmap(ofd.FileName);
+                TesseractEngine engine = new TesseractEngine("./tessd", "eng", EngineMode.Default);
+                Page page = engine.Process(img, PageSegMode.Auto);
+                string result = page.GetText();
+                t_d.Text= result;
+
+                t_d_.ImageLocation = ofd.FileName;
 
             }
             

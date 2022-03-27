@@ -23,4 +23,4 @@ Smart Camera can extract text from live video
 
 Smart Camera can extract text from image
 
-![cam_text_d](https://user-images.githubusercontent.com/79098078/160258044-a98ef07b-922d-4e84-bd09-0938e82da2e7.png)
+![cam_t](https://user-images.githubusercontent.com/79098078/160261055-0b3b958d-76c2-47d7-bf34-6de23f139ff7.png)
